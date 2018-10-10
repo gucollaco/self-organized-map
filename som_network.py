@@ -37,24 +37,46 @@ def kohonen(values, neuron_weights, learning_rate=0.3, acceptable_error=0.1, n_e
     
     #for epoch in n_epochs:
     for i in range(total_inputs):
-        distances = [[] for i in range(dimension)]
-            
+        
+        # calculate all the distances for this input
+        distances = []
         for j in range(dimension):
             for k in range(dimension):
-                    
+                
                 distance = 0
                 for l in range(n_inputs):
                     distance += (neuron_weights[j][k][l] - values[i][l]) ** 2
                 
-                distances[j].append(distance)
-                
-        #epochs.append(epoch+1)
+                distances.append(np.sqrt(distance))
         
-    print('distances', distances)
+        # printing the distances
+        print('distances', distances)
+        
+        # minimum distance value (winner)
+        index_winner = np.amin(distances)
+        value_winner = np.argmin(distances)
+        x_winner = index_winner % dimension
+        y_winner = int(i_winner / dimension)
+        
+        # calculate the distances related to the winner      
+        distances_winner = []
+        for j in range(dimension):
+            for k in range(dimension):
+                
+                distance = 0
+                
+                distances_winner.append()
+        
+        # printing the distances related to the winner
+        print('distances to the winner', distances_winner)
+    
+    
 
 # main function
 if __name__ == "__main__":
-    # returning values and answers from the dataset function
+    # returning values and neuron_weights from the dataset function
+    # the neuron_weights is a 'square', with same length and width
+    # its depth is based on the amount of parameters on the input
     values, neuron_weights = dataset()
     
     #normalized_values = normalize(values)
