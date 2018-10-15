@@ -16,13 +16,30 @@ def normalize(values):
     return (values - values.min()) / (values.max() - values.min())
 
 # plot the values
-def plot_data(dimension):
+def plot_data_by_value(dimension, neuron_weights, actual_values, n_inputs):
     img = np.zeros((dimension, dimension))
     for i in range(dimension):
         for j in range(dimension):
-            img[i][j] = 1
+            aux = 0
+            for k in range(n_inputs):
+                aux += neuron_weights[i][j][k] * actual_values[k]
+            img[i][j] = aux
             
     plt.imshow(img)
+    plt.pause(0.0025)
+    
+# plot the values
+def plot_data_final(dimension, neuron_weights, n_inputs):
+    img = np.zeros((dimension, dimension))
+    for i in range(dimension):
+        for j in range(dimension):
+            aux = 0
+            for k in range(n_inputs):
+                aux += neuron_weights[i][j][k]**2
+            img[i][j] = np.sqrt(aux)
+            
+    plt.imshow(img)
+    #plt.pause(0.025)
 
 # dataset preparation function
 def dataset():
@@ -37,20 +54,20 @@ def dataset():
     dimension_x = dimension_y = int(np.sqrt(round(np.sqrt(2) * np.size(values, 0))))
     n_inputs = len(values[0])
     random.seed(30)
-    neuron_weights = np.random.uniform(low=0.05, high=0.2, size=(dimension_x, dimension_y, n_inputs))
+    neuron_weights = np.random.uniform(low=0.0, high=0.1, size=(dimension_x, dimension_y, n_inputs))
 
     # returning values and answers
     return values, neuron_weights
 
 # competition
-def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=50):
+def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=300):
     #epochs = []
     n_inputs = len(values[0])
     total_inputs = len(values)
     dimension = len(neuron_weights[0])
     
     # new 
-    sigma0 = 0.9
+    #sigma0 = 0.9
     initial_learning_rate = learning_rate
     
     # iterate through all epochs
@@ -64,12 +81,13 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=50):
                     
                     distance = 0
                     for l in range(n_inputs):
-                        distance += (neuron_weights[j][k][l] - values[i][l]) ** 2
+                        distance += (values[i][l] - neuron_weights[j][k][l]) ** 2
                     
-                    distances.append(np.sqrt(distance))
+                    #distances.append(np.sqrt(distance))
+                    distances.append(distance)
             
             # printing the distances
-            print('distances', distances)
+            #print('distances', distances)
             
             # minimum distance value (winner)
             index_winner = np.argmin(distances)
@@ -77,9 +95,9 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=50):
             y_winner = int(index_winner / dimension)
             
             # printing the winner information
-            print('winner axis on the distances array', index_winner)
-            print('winner x axis', x_winner)
-            print('winner y axis', y_winner)
+            #print('winner axis on the distances array', index_winner)
+            #print('winner x axis', x_winner)
+            #print('winner y axis', y_winner)
             
             # calculate the distances related to the winner      
             distances_winner = []
@@ -90,33 +108,54 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=50):
                     x_neuron = k
                     y_neuron = j
                     distance = (x_winner - x_neuron) ** 2 + (y_winner - y_neuron) ** 2
-                    distances_winner.append(np.sqrt(distance))
-            
+                    #distances_winner.append(np.sqrt(distance))
+                    distances_winner.append(distance)
+
             # printing the distances related to the winner
-            print('distances to the winner', distances_winner)
+            #print('distances to the winner', distances_winner)
             
-            #sigma0 = dimendion / 2
+            sigma0 = dimension / 2
+            tau = n_epochs / sigma0
+            sigma = sigma0 * np.exp((-1) * epoch / tau)
+            new_learning_rate = initial_learning_rate * np.exp((-1) * epoch / tau)
+            print('Winner location: ', x_winner, y_winner)
+            print('Actual sigma: ', sigma)
+            print('Actual learning rate: ', new_learning_rate)
+            
+            #sigma0 = dimension / 2
             #tau = n_epochs / math.log(sigma0)
-            #sigma = sigma0 * np.exp(((-1) * epoch) / tau)
+            #sigma = sigma0 * np.exp((-1) * epoch / tau)
+            #learning_rate = initial_learning_rate * (1 - epoch / n_epochs)
             
             # modify sigma and learning rate according to the epoch
-            sigma = sigma0 * (1 - epoch / n_epochs)
-            learning_rate = initial_learning_rate * (1 - epoch / n_epochs)
+            #sigma = sigma0 * (1 - epoch / n_epochs)
+            #learning_rate = initial_learning_rate * (1 - epoch / n_epochs)
             
             # update the weights
             for j in range(dimension):
                 for k in range(dimension):
                     pos = j * dimension + k
-                    h = math.exp((-1) * distances_winner[pos]**2 / (2 * sigma**2))
                     
-                    for l in range(n_inputs):
-                        neuron_weights[j][k][l] = neuron_weights[j][k][l] + learning_rate * h * distances[pos]
+                    if(distances_winner[pos] < sigma):
+                        print('Distance to winner', distances_winner[pos])
+                        h = np.exp((-1) * distances_winner[pos]**2 / (2 * sigma**2))
+                        
+                        for l in range(n_inputs):
+                            neuron_weights[j][k][l] = neuron_weights[j][k][l] + new_learning_rate * h * (values[i][l] - neuron_weights[j][k][l]) #distances[pos]
             
-        # plotting the data
-        plot_data(dimension)
+            # plotting the data
+            #plot_data_by_value(dimension, neuron_weights, values[i], n_inputs)
+            
+            # prints the input number and the actual epoch
+            print('Input number: ', i)
+            print('Actual epoch: ', epoch)
+            print('______________________')
             
         # prints the actual epoch
-        print('Actual epoch', epoch)
+        #print('Actual epoch', epoch)
+        
+        # plotting the final data
+        plot_data_final(dimension, neuron_weights, n_inputs)
         
 # main function
 if __name__ == "__main__":
@@ -128,6 +167,6 @@ if __name__ == "__main__":
     # calling the network processing
     kohonen(values, neuron_weights)
 
-    print('VAL', values)
-    print('WEIGHTS', neuron_weights)
+    #print('VAL', values)
+    #print('WEIGHTS', neuron_weights)
     #print('KOHONEN', len(neuron_weights[0]))
