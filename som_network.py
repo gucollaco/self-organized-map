@@ -6,7 +6,6 @@ Created on Fri Oct  5 11:43:08 2018
 """
 
 import pandas as pd
-import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,8 +37,34 @@ def plot_data_final(dimension, neuron_weights, n_inputs):
                 aux += neuron_weights[i][j][k]**2
             img[i][j] = np.sqrt(aux)
             
+    plt.figure(1)
     plt.imshow(img)
-    #plt.pause(0.025)
+
+# plot the best matching units
+def plot_bmu(dimension, best_matching_units, n_inputs):
+    #print('best_matching_units', best_matching_units)
+    img = np.zeros((dimension, dimension))
+    for i in range(dimension):
+        for j in range(dimension):
+            value = 0
+            if [i, j] in best_matching_units: value = 1
+            img[i][j] = value
+            
+    plt.figure(2)
+    plt.imshow(img, cmap="gray")
+    
+# plot the best matching units
+def plot_bmu_alt(dimension, best_matching_units, n_inputs):
+    #print('best_matching_units', best_matching_units)
+    img = np.zeros((dimension, dimension))
+    for i in range(dimension):
+        for j in range(dimension):
+            value = 0
+            if [i, j] in best_matching_units: value = 1
+            img[i][j] = value
+            
+    plt.figure(3)
+    plt.imshow(img, cmap="gray")
 
 # dataset preparation function
 def dataset():
@@ -54,13 +79,13 @@ def dataset():
     dimension_x = dimension_y = int(np.sqrt(round(np.sqrt(2) * np.size(values, 0))))
     n_inputs = len(values[0])
     random.seed(30)
-    neuron_weights = np.random.uniform(low=0.0, high=0.1, size=(dimension_x, dimension_y, n_inputs))
+    neuron_weights = np.random.uniform(low=-0.1, high=0.1, size=(dimension_x, dimension_y, n_inputs))
 
     # returning values and answers
     return values, neuron_weights
 
 # competition
-def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=300):
+def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=1000):
     #epochs = []
     n_inputs = len(values[0])
     total_inputs = len(values)
@@ -72,6 +97,8 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=300):
     
     # iterate through all epochs
     for epoch in range(n_epochs):
+        best_matching_units = []
+        
         for i in range(total_inputs):
             
             # calculate all the distances for this input
@@ -114,10 +141,15 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=300):
             # printing the distances related to the winner
             #print('distances to the winner', distances_winner)
             
-            sigma0 = dimension / 2
+            # adding the winner to the best_matching_units array
+            best_matching_units.append([x_winner, y_winner])
+            
+            sigma0 = np.sqrt(dimension ** 2 + dimension ** 2)
+            #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0  
             tau = n_epochs / sigma0
             sigma = sigma0 * np.exp((-1) * epoch / tau)
             new_learning_rate = initial_learning_rate * np.exp((-1) * epoch / tau)
+            
             print('Winner location: ', x_winner, y_winner)
             print('Actual sigma: ', sigma)
             print('Actual learning rate: ', new_learning_rate)
@@ -154,9 +186,12 @@ def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=300):
         # prints the actual epoch
         #print('Actual epoch', epoch)
         
-        # plotting the final data
-        plot_data_final(dimension, neuron_weights, n_inputs)
-        
+    print('DISTANCE', distances)
+    # plotting the final data
+    plot_data_final(dimension, neuron_weights, n_inputs)
+    plot_bmu(dimension, best_matching_units, n_inputs)
+    #plot_bmu_alt(dimension, best_matching_units, n_inputs)
+
 # main function
 if __name__ == "__main__":
     # returning values and neuron_weights from the dataset function
