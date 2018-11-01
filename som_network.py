@@ -85,7 +85,7 @@ def dataset():
     return values, neuron_weights
 
 # competition
-def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=1000):
+def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=200):
     #epochs = []
     n_inputs = len(values[0])
     total_inputs = len(values)
@@ -128,12 +128,10 @@ def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=1000):
             
             # calculate the distances related to the winner      
             distances_winner = []
-            for j in range(dimension):
-                for k in range(dimension):
+            for y_neuron in range(dimension):
+                for x_neuron in range(dimension):
                     
                     distance = 0
-                    x_neuron = k
-                    y_neuron = j
                     distance = (x_winner - x_neuron) ** 2 + (y_winner - y_neuron) ** 2
                     #distances_winner.append(np.sqrt(distance))
                     distances_winner.append(distance)
@@ -144,6 +142,9 @@ def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=1000):
             # adding the winner to the best_matching_units array
             best_matching_units.append([x_winner, y_winner])
             
+			#sigma = sigma0 = math.sqrt(-(dimension**2) / (2*math.log(0.1)))
+			#tau = max_expocas/np.log(sigma0/0.1)
+			
             sigma0 = np.sqrt(dimension ** 2 + dimension ** 2)
             #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0  
             tau = n_epochs / sigma0
