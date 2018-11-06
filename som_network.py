@@ -85,7 +85,7 @@ def dataset():
     return values, neuron_weights
 
 # competition
-def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=200):
+def kohonen(values, neuron_weights, learning_rate=0.3, n_epochs=200):
     #epochs = []
     n_inputs = len(values[0])
     total_inputs = len(values)
@@ -93,7 +93,10 @@ def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=200):
     
     # new 
     #sigma0 = 0.9
+    sigma0 = None
+    sigma = None
     initial_learning_rate = learning_rate
+    new_learning_rate = learning_rate
     
     # iterate through all epochs
     for epoch in range(n_epochs):
@@ -142,18 +145,20 @@ def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=200):
             # adding the winner to the best_matching_units array
             best_matching_units.append([x_winner, y_winner])
             
-			#sigma = sigma0 = math.sqrt(-(dimension**2) / (2*math.log(0.1)))
-			#tau = max_expocas/np.log(sigma0/0.1)
-			
-            sigma0 = np.sqrt(dimension ** 2 + dimension ** 2)
-            #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0  
-            tau = n_epochs / sigma0
-            sigma = sigma0 * np.exp((-1) * epoch / tau)
-            new_learning_rate = initial_learning_rate * np.exp((-1) * epoch / tau)
+            #sigma = sigma0 = math.sqrt(-(dimension**2) / (2*math.log(0.1)))
+            #tau = max_expocas/np.log(sigma0/0.1)
             
-            print('Winner location: ', x_winner, y_winner)
-            print('Actual sigma: ', sigma)
-            print('Actual learning rate: ', new_learning_rate)
+            if sigma is None:
+                sigma = sigma0 = np.sqrt(-(dimension**2) / (2*np.log(0.1)))
+                tau = n_epochs / np.log(sigma0/0.1)
+                #sigma = sigma0 = np.sqrt(dimension ** 2 + dimension ** 2)
+                #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0  
+            #tau = n_epochs / sigma0
+            
+            
+            #print('Winner location: ', x_winner, y_winner)
+            #print('Actual sigma: ', sigma)
+            #print('Actual learning rate: ', new_learning_rate)
             
             #sigma0 = dimension / 2
             #tau = n_epochs / math.log(sigma0)
@@ -169,25 +174,32 @@ def kohonen(values, neuron_weights, learning_rate=0.9, n_epochs=200):
                 for k in range(dimension):
                     pos = j * dimension + k
                     
-                    if(distances_winner[pos] < sigma):
-                        print('Distance to winner', distances_winner[pos])
-                        h = np.exp((-1) * distances_winner[pos]**2 / (2 * sigma**2))
-                        
-                        for l in range(n_inputs):
-                            neuron_weights[j][k][l] = neuron_weights[j][k][l] + new_learning_rate * h * (values[i][l] - neuron_weights[j][k][l]) #distances[pos]
+                    #if(distances_winner[pos] < sigma):
+                    #print('Distance to winner', distances_winner[pos])
+                    h = np.exp((-1) * distances_winner[pos]**2 / (2 * sigma**2))
+                    
+                    for l in range(n_inputs):
+                        neuron_weights[j][k][l] = neuron_weights[j][k][l] + new_learning_rate * h * (values[i][l] - neuron_weights[j][k][l]) #distances[pos]
             
             # plotting the data
             #plot_data_by_value(dimension, neuron_weights, values[i], n_inputs)
             
             # prints the input number and the actual epoch
-            print('Input number: ', i)
-            print('Actual epoch: ', epoch)
-            print('______________________')
+            #print('Input number: ', i)
+            #print('Actual epoch: ', epoch)
+            #print('______________________')
             
-        # prints the actual epoch
-        #print('Actual epoch', epoch)
+        sigma = sigma0 * np.exp((-1) * epoch / tau)
+        new_learning_rate = initial_learning_rate * np.exp((-1) * epoch / tau)
         
-    print('DISTANCE', distances)
+        # prints the actual epoch
+        print('Actual epoch: ', epoch)
+        print('Learning Rate: ', new_learning_rate)
+        print('Sigma: ', sigma)
+        print('____________________')
+    
+    #print('DISTANCE', distances)
+    
     # plotting the final data
     plot_data_final(dimension, neuron_weights, n_inputs)
     plot_bmu(dimension, best_matching_units, n_inputs)
