@@ -13,19 +13,29 @@ import matplotlib.pyplot as plt
 def normalize(values):
     return (values - values.min()) / (values.max() - values.min())
 
-# plot the values (slow)
-def plot_data_by_value(dimension, neuron_weights, actual_values, n_inputs):
-    img = np.zeros((dimension, dimension))
-    for i in range(dimension):
-        for j in range(dimension):
-            aux = 0
-            for k in range(n_inputs):
-                aux += neuron_weights[i][j][k] * actual_values[k]
-            img[i][j] = aux
+# find representation (slow)
+def find_representation(dimension, neuron_weights, n_inputs, values, answers):
+    most_similar = np.zeros((dimension, dimension))
+    total_inputs = len(values)
+    distances = []
+    for j in range(dimension):
+        for k in range(dimension):
+            
+            for i in range(total_inputs):
+                distance = 0
+                for l in range(n_inputs):
+                    distance += (values[i][l] - neuron_weights[j][k][l]) ** 2
+                
+                distances.append(np.sqrt(distance))
+            
+            index_most_similar = np.argmin(distances)
+            
+            distances = []
+            most_similar[j][k] = answers[index_most_similar]
     
-    plt.figure()
-    plt.imshow(img, cmap='gray')
-    plt.pause(0.0025)
+    # array containing the most similar values (results from the expected output array)
+    # for each 'pixel'
+    return most_similar
     
 # plot the values
 def plot_data_final(dimension, neuron_weights, n_inputs):
@@ -77,7 +87,7 @@ def plot_bmu(dimension, best_matching_units, best_matching_units_result, n_input
 
 
 # plot the umatrix
-def plot_umatrix(dimension, values, neuron_weights, n_inputs):
+def plot_umatrix(dimension, values, neuron_weights, n_inputs, total_inputs, answers):
     img = np.zeros((dimension, dimension))
     
     fig, ax = plt.subplots()
@@ -175,24 +185,22 @@ def plot_umatrix(dimension, values, neuron_weights, n_inputs):
 
     img_plt = ax.imshow(img)
     
+    most_similar = find_representation(dimension, neuron_weights, n_inputs, total_inputs, answers)
+    
     # annotations
     for i in range(dimension):
         for j in range(dimension):
-            text = ax.text(j, i, round(img[i, j], 2), ha="center", va="center", color="w")
+            #text = ax.text(j, i, round(img[i, j], 2), ha="center", va="center", color="w")
+            text = ax.text(j, i, most_similar[i, j], ha="center", va="center", color="w")
 
     #plt.figure()
     plt.title("Umatrix")
     plt.show()
-    
-    #print(img)
-    #plt.figure()
-    #plt.title("Umatrix")
-    #plt.imshow(img)
 
 # dataset preparation function
 def dataset():
     # read csv file
-    data = pd.read_csv("iris_dataset.csv", header=None)
+    data = pd.read_csv("dataset_vertebral_column.csv", header=None, sep=" ")
     # shuffles the data
     data = data.sample(frac=1).reset_index(drop=True)
     # inputs
@@ -323,7 +331,7 @@ def kohonen(values, answers, neuron_weights, learning_rate=0.3, n_epochs=50):
     # plotting the final data
     plot_data_final(dimension, neuron_weights, n_inputs)
     plot_bmu(dimension, best_matching_units, best_matching_units_result, n_inputs)
-    plot_umatrix(dimension, values, neuron_weights, n_inputs)
+    plot_umatrix(dimension, values, neuron_weights, n_inputs, values, answers)
 
 # main function
 if __name__ == "__main__":
