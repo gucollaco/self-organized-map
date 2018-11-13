@@ -190,17 +190,15 @@ def plot_umatrix(dimension, values, neuron_weights, n_inputs, total_inputs, answ
     # annotations
     for i in range(dimension):
         for j in range(dimension):
-            #text = ax.text(j, i, round(img[i, j], 2), ha="center", va="center", color="w")
             text = ax.text(j, i, most_similar[i, j], ha="center", va="center", color="w")
 
-    #plt.figure()
     plt.title("Umatrix")
     plt.show()
 
 # dataset preparation function
 def dataset():
     # read csv file
-    data = pd.read_csv("dataset_vertebral_column.csv", header=None, sep=" ")
+    data = pd.read_csv("dataset_iris.csv", header=None, sep=" ")
     # shuffles the data
     data = data.sample(frac=1).reset_index(drop=True)
     # inputs
@@ -251,18 +249,10 @@ def kohonen(values, answers, neuron_weights, learning_rate=0.3, n_epochs=50):
                     distances.append(np.sqrt(distance))
                     #distances.append(distance)
             
-            # printing the distances
-            #print('distances', distances)
-            
             # minimum distance value (winner)
             index_winner = np.argmin(distances)
             x_winner = index_winner % dimension
             y_winner = int(index_winner / dimension)
-            
-            # printing the winner information
-            #print('winner axis on the distances array', index_winner)
-            #print('winner x axis', x_winner)
-            #print('winner y axis', y_winner)
             
             # calculate the distances related to the winner      
             distances_winner = []
@@ -274,46 +264,21 @@ def kohonen(values, answers, neuron_weights, learning_rate=0.3, n_epochs=50):
                     distances_winner.append(np.sqrt(distance))
                     #distances_winner.append(distance)
 
-            # printing the distances related to the winner
-            #print('distances to the winner', distances_winner)
-            
             # adding the winner to the best_matching_units array
             best_matching_units.append([x_winner, y_winner])
             best_matching_units_result.append(answers[i])
-            
-            #sigma = sigma0 = math.sqrt(-(dimension**2) / (2*math.log(0.1)))
-            #tau = max_expocas/np.log(sigma0/0.1)
             
             if sigma is None:
                 sigma = sigma0 = np.sqrt(-(dimension**2) / (2*np.log(0.1)))
                 tau = n_epochs / np.log(sigma0/0.1)
                 #sigma = sigma0 = np.sqrt(dimension ** 2 + dimension ** 2)
-                #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0  
-            #tau = n_epochs / sigma0
-            
-            
-            #print('Winner location: ', x_winner, y_winner)
-            #print('Actual sigma: ', sigma)
-            #print('Actual learning rate: ', new_learning_rate)
-            
-            #sigma0 = dimension / 2
-            #tau = n_epochs / math.log(sigma0)
-            #sigma = sigma0 * np.exp((-1) * epoch / tau)
-            #learning_rate = initial_learning_rate * (1 - epoch / n_epochs)
-            
-            # modify sigma and learning rate according to the epoch
-            #sigma = sigma0 * (1 - epoch / n_epochs)
-            #learning_rate = initial_learning_rate * (1 - epoch / n_epochs)
+                #tau = (-1) * n_epochs / np.log((5*10**(-5)) / sigma0)#sigma0
             
             # update the weights
             for j in range(dimension):
                 for k in range(dimension):
                     pos = j * dimension + k
                     
-                    #if(distances_winner[pos] < sigma):
-                    
-                    #print('Distance to winner', distances_winner[pos])
-                        
                     h = np.exp((-1) * distances_winner[pos]**2 / (2 * sigma**2))
                         
                     for l in range(n_inputs):
