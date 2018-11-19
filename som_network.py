@@ -70,7 +70,7 @@ def plot_bmu(dimension, best_matching_units, best_matching_units_result, n_input
                         value_all.append(best_matching_units_result[all_found[z]])
                         
                     value_all = list(set(value_all))
-                    value = sum(value_all) / len(value_all)
+                    value = round(sum(value_all) / len(value_all), 2)
                     
             img[j][i] = value
     
@@ -198,7 +198,7 @@ def plot_umatrix(dimension, values, neuron_weights, n_inputs, total_inputs, answ
 # dataset preparation function
 def dataset():
     # read csv file
-    data = pd.read_csv("dataset_iris.csv", header=None, sep=" ")
+    data = pd.read_csv("dataset_iris.csv", header=None, sep=",")
     # shuffles the data
     data = data.sample(frac=1).reset_index(drop=True)
     # inputs
@@ -219,7 +219,7 @@ def dataset():
     return values, answers, neuron_weights
 
 # competition
-def kohonen(values, answers, neuron_weights, learning_rate=0.3, n_epochs=50):
+def kohonen(values, answers, neuron_weights, learning_rate=0.3, n_epochs=100):
     n_inputs = len(values[0])
     total_inputs = len(values)
     dimension = len(neuron_weights[0])
